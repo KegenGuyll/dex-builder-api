@@ -5,5 +5,6 @@ export interface Deck {
 }
 
 export interface Card {
-  id: number;
+  id: string;
+  count: number;
 }

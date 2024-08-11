@@ -1,4 +1,5 @@
-import { IsInt, IsString } from 'class-validator';
+import { IsObject, IsString } from 'class-validator';
+import { Card } from '../interface/deck.interface';
 
 export class CreateDeckDto {
   @IsString()
@@ -7,6 +8,6 @@ export class CreateDeckDto {
   @IsString()
   readonly description: string;
 
-  @IsInt({ each: true })
-  readonly cards: number[];
+  @IsObject({ each: true })
+  readonly cards: Card[];
 }

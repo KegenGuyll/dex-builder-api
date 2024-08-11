@@ -1,27 +1,38 @@
 import { Injectable } from '@nestjs/common';
-import { Deck } from './interface/deck.interface';
+import { CreateDeckDto } from './dto/create-deck.dto';
+import { InjectModel } from '@nestjs/mongoose';
+import { Deck } from 'src/schemas/deck.schema';
+import { Model } from 'mongoose';
 
 @Injectable()
 export class DeckService {
-  private readonly decks: Deck[] = [];
+  constructor(@InjectModel(Deck.name) private deckModel: Model<Deck>) {}
 
-  async create(deck: any) {
-    await this.decks.push(deck);
+  async create(createDeckDto: CreateDeckDto): Promise<Deck> {
+    const createdDeck = new this.deckModel(createDeckDto);
+    return createdDeck.save();
   }
 
-  findAll() {
-    return this.decks;
+  async findAll(): Promise<Deck[]> {
+    const decks = await this.deckModel.find().exec();
+    return decks;
   }
 
-  findOne(id: number) {
-    return this.decks[id];
+  async findOne(id: string) {
+    const deck = await this.deckModel.findOne({ _id: id });
+    return deck;
   }
 
-  update(id: number, deck: any) {
-    this.decks[id] = deck;
+  async update(id: string, updateDeckDto: CreateDeckDto) {
+    await this.deckModel.findByIdAndUpdate({ _id: id }, updateDeckDto);
+
+    const updatedDeck = await this.deckModel.findOne({ _id: id });
+
+    return updatedDeck;
   }
 
-  remove(id: number) {
-    this.decks.splice(id, 1);
+  async remove(id: string) {
+    await this.deckModel.deleteOne({ _id: id });
+    return `Deck ${id} has been deleted`;
   }
 }

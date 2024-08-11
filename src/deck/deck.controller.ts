@@ -4,7 +4,6 @@ import {
   Delete,
   Get,
   Param,
-  ParseIntPipe,
   Post,
   Put,
 } from '@nestjs/common';
@@ -27,23 +26,25 @@ export class DeckController {
   }
 
   @Get()
-  findAll(): Deck[] {
+  findAll(): Promise<Deck[]> {
     return this.deckService.findAll();
   }
 
   @Get(':deckId')
-  findOne(@Param('deckId', ParseIntPipe) deckId: number): string {
-    console.log(deckId);
-    return `This action returns a #${deckId} deck`;
+  findOne(@Param('deckId') deckId: string): Promise<Deck> {
+    return this.deckService.findOne(deckId);
   }
 
   @Put(':deckId')
-  update(@Param('deckId', ParseIntPipe) deckId: number): string {
-    return `This action updates a #${deckId} deck`;
+  update(
+    @Param('deckId') deckId: string,
+    @Body(new ValidationPipe()) updateDeckDto: CreateDeckDto,
+  ): Promise<Deck> {
+    return this.deckService.update(deckId, updateDeckDto);
   }
 
   @Delete(':deckId')
-  remove(@Param('deckId', ParseIntPipe) deckId: number): string {
-    return `This action removes a #${deckId} deck`;
+  remove(@Param('deckId') deckId: string): Promise<string> {
+    return this.deckService.remove(deckId);
   }
 }
