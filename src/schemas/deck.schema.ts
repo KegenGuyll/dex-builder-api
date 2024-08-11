@@ -4,7 +4,7 @@ import { Card } from 'src/deck/interface/deck.interface';
 
 export type DeckDocument = HydratedDocument<Deck>;
 
-@Schema()
+@Schema({ timestamps: true, versionKey: false })
 export class Deck {
   @Prop()
   name: string;
