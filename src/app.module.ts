@@ -12,9 +12,15 @@ import { AppService } from './app.service';
 import { DeckModule } from './deck/deck.module';
 
 import { env } from './common/env';
+import { UserModule } from './user/user.module';
 
 @Module({
-  imports: [envModule, DeckModule, MongooseModule.forRoot(env.MONGO_URI)],
+  imports: [
+    envModule,
+    DeckModule,
+    MongooseModule.forRoot(env.MONGO_URI),
+    UserModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
