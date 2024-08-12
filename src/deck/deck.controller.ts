@@ -6,12 +6,13 @@ import {
   Param,
   Post,
   Put,
+  Req,
 } from '@nestjs/common';
 import { DeckService } from './deck.service';
-import { Deck } from './interface/deck.interface';
 import { CreateDeckDto } from './dto/create-deck.dto';
 import { ValidationPipe } from 'src/common/pipes/validation.pipe';
 import { Auth } from 'src/decorators/auth.decorator';
+import { Deck } from 'src/schemas/deck.schema';
 
 @Controller('deck')
 export class DeckController {
@@ -19,24 +20,29 @@ export class DeckController {
 
   @Post()
   @Auth('USER')
-  async create(
+  create(
     @Body(new ValidationPipe()) createDeckDto: CreateDeckDto,
-  ): Promise<string> {
-    await this.deckService.create(createDeckDto);
+    @Req() req: Request,
+  ): Promise<Deck> {
+    const authToken: string = (req.headers as any).authorization;
 
-    return 'This action adds a new deck';
+    return this.deckService.create(createDeckDto, authToken);
   }
 
   @Get()
   @Auth('USER')
-  findAll(): Promise<Deck[]> {
-    return this.deckService.findAll();
+  findAll(@Req() req: Request): Promise<Deck[]> {
+    const authToken: string = (req.headers as any).authorization;
+
+    return this.deckService.findAll(authToken);
   }
 
   @Get(':deckId')
   @Auth('USER')
-  findOne(@Param('deckId') deckId: string): Promise<Deck> {
-    return this.deckService.findOne(deckId);
+  findOne(@Param('deckId') deckId: string, @Req() req: Request): Promise<Deck> {
+    const authToken: string = (req.headers as any).authorization;
+
+    return this.deckService.findOne(deckId, authToken);
   }
 
   @Put(':deckId')
@@ -44,13 +50,21 @@ export class DeckController {
   update(
     @Param('deckId') deckId: string,
     @Body(new ValidationPipe()) updateDeckDto: CreateDeckDto,
+    @Req() req: Request,
   ): Promise<Deck> {
-    return this.deckService.update(deckId, updateDeckDto);
+    const authToken: string = (req.headers as any).authorization;
+
+    return this.deckService.update(deckId, updateDeckDto, authToken);
   }
 
   @Delete(':deckId')
   @Auth('USER')
-  remove(@Param('deckId') deckId: string): Promise<string> {
-    return this.deckService.remove(deckId);
+  remove(
+    @Param('deckId') deckId: string,
+    @Req() req: Request,
+  ): Promise<string> {
+    const authToken: string = (req.headers as any).authorization;
+
+    return this.deckService.remove(deckId, authToken);
   }
 }

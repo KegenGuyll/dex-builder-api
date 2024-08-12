@@ -14,6 +14,9 @@ export class Deck {
 
   @Prop()
   cards: Card[];
+
+  @Prop({ required: true })
+  userId: string;
 }
 
 export const DeckSchema = SchemaFactory.createForClass(Deck);
