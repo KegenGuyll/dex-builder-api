@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { FirebaseAdmin } from 'config/firebase.setup';
-import { UserDto } from './dto/user.dto';
+import { CreateUserDto, UpdateUserDto, UserRoleDto } from './dto/user.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { User } from 'src/schemas/user.schema';
 import { Model } from 'mongoose';
@@ -12,7 +12,7 @@ export class UserService {
     private readonly admin: FirebaseAdmin,
   ) {}
 
-  async createUser(authToken: string, userDto: UserDto): Promise<User> {
+  async createUser(authToken: string, userDto: CreateUserDto): Promise<User> {
     try {
       const app = this.admin.setup();
 
@@ -26,7 +26,7 @@ export class UserService {
         role: userDto.role,
         username: userDto.username,
         photoURL: user.photoURL,
-        public: true,
+        public: userDto.public,
       });
 
       await newUser.save();
@@ -34,6 +34,46 @@ export class UserService {
       const newlyCreatedUser = await this.userModal.findOne({ uid: user.uid });
 
       return newlyCreatedUser;
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
+  }
+
+  async findAll(): Promise<User[]> {
+    return this.userModal.find();
+  }
+
+  async updateUserRole(userId: string, userDto: UserRoleDto): Promise<User> {
+    try {
+      const updatedUser = await this.userModal.findOneAndUpdate(
+        { uid: userId },
+        { role: userDto.role },
+        { new: true },
+      );
+
+      return updatedUser;
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
+  }
+
+  async updateUser(authToken: string, userDto: UpdateUserDto): Promise<User> {
+    try {
+      const app = this.admin.setup();
+
+      const user = await app.auth().verifyIdToken(authToken);
+
+      const updatedUser = await this.userModal.findOneAndUpdate(
+        { uid: user.uid },
+        {
+          username: userDto.username,
+          photoURL: userDto.photoURL,
+          email: userDto.email,
+        },
+        { new: true },
+      );
+
+      return updatedUser;
     } catch (error) {
       throw new BadRequestException(error.message);
     }
