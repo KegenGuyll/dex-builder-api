@@ -1,4 +1,11 @@
-import { IsNotEmpty, IsNumber, IsObject, IsString } from 'class-validator';
+import {
+  IsBoolean,
+  IsDefined,
+  IsNotEmpty,
+  IsNumber,
+  IsObject,
+  IsString,
+} from 'class-validator';
 import { BasicCard } from '../interface/deck.interface';
 import { Transform } from 'class-transformer';
 
@@ -11,6 +18,13 @@ export class CreateDeckDto {
 
   @IsObject({ each: true })
   readonly cards: BasicCard[];
+
+  @IsDefined()
+  @Transform(({ value }) =>
+    value === 'true' ? true : value === 'false' ? false : value,
+  )
+  @IsBoolean()
+  isPublic: boolean;
 }
 
 export class DeckQueryDto {

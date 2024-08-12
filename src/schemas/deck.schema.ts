@@ -17,6 +17,9 @@ export class Deck {
 
   @Prop({ required: true })
   userId: string;
+
+  @Prop({ default: false })
+  isPublic: boolean;
 }
 
 export const DeckSchema = SchemaFactory.createForClass(Deck);
