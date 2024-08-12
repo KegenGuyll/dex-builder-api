@@ -1,15 +1,17 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateDeckDto } from './dto/create-deck.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Deck } from 'src/schemas/deck.schema';
 import { Model } from 'mongoose';
 import { FirebaseAdmin } from 'config/firebase.setup';
+import { CardService } from 'src/card/card.service';
 
 @Injectable()
 export class DeckService {
   constructor(
     @InjectModel(Deck.name) private deckModel: Model<Deck>,
     private readonly admin: FirebaseAdmin,
+    @Inject(CardService) private readonly cardService: CardService,
   ) {}
 
   async create(createDeckDto: CreateDeckDto, authToken: string): Promise<Deck> {
@@ -17,10 +19,17 @@ export class DeckService {
 
     const user = await app.auth().verifyIdToken(authToken);
 
+    const promiseMap = createDeckDto.cards.map((card) =>
+      this.cardService.create(card.id),
+    );
+
     const createdDeck = new this.deckModel({
       ...createDeckDto,
       userId: user.uid,
     });
+
+    await Promise.all(promiseMap);
+
     return createdDeck.save();
   }
 
