@@ -1,4 +1,4 @@
-import { Controller, Param, Post } from '@nestjs/common';
+import { Controller, Param, Post, Put } from '@nestjs/common';
 import { CardService } from './card.service';
 
 @Controller('card')
@@ -9,6 +9,13 @@ export class CardController {
   async create(@Param('cardId') cardId: string): Promise<string> {
     await this.cardService.create(cardId);
 
-    return 'Card created';
+    return `Card-${cardId} created`;
+  }
+
+  @Put(':cardId')
+  async update(@Param('cardId') cardId: string): Promise<string> {
+    await this.cardService.update(cardId);
+
+    return `Card-${cardId} updated`;
   }
 }
