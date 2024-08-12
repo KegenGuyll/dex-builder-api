@@ -5,6 +5,7 @@ import { Deck } from 'src/schemas/deck.schema';
 import { Model } from 'mongoose';
 import { FirebaseAdmin } from 'config/firebase.setup';
 import { CardService } from 'src/card/card.service';
+import { Card } from './interface/deck.interface';
 
 @Injectable()
 export class DeckService {
@@ -14,21 +15,23 @@ export class DeckService {
     @Inject(CardService) private readonly cardService: CardService,
   ) {}
 
+  async updateTCGCards(cards: Card[]) {
+    const promiseMap = cards.map((card) => this.cardService.create(card.id));
+
+    await Promise.all(promiseMap);
+  }
+
   async create(createDeckDto: CreateDeckDto, authToken: string): Promise<Deck> {
     const app = this.admin.setup();
 
     const user = await app.auth().verifyIdToken(authToken);
 
-    const promiseMap = createDeckDto.cards.map((card) =>
-      this.cardService.create(card.id),
-    );
+    await this.updateTCGCards(createDeckDto.cards);
 
     const createdDeck = new this.deckModel({
       ...createDeckDto,
       userId: user.uid,
     });
-
-    await Promise.all(promiseMap);
 
     return createdDeck.save();
   }
@@ -60,6 +63,8 @@ export class DeckService {
     const app = this.admin.setup();
 
     const user = await app.auth().verifyIdToken(authToken);
+
+    await this.updateTCGCards(updateDeckDto.cards);
 
     await this.deckModel.findByIdAndUpdate(
       { _id: id, userId: user.uid },
