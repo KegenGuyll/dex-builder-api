@@ -12,19 +12,19 @@ export class UserService {
     private readonly admin: FirebaseAdmin,
   ) {}
 
-  async createUser(authToken: string, userClaim: UserDto): Promise<User> {
+  async createUser(authToken: string, userDto: UserDto): Promise<User> {
     try {
       const app = this.admin.setup();
 
       const user = await app.auth().verifyIdToken(authToken);
 
-      app.auth().setCustomUserClaims(user.uid, userClaim);
+      await app.auth().setCustomUserClaims(user.uid, { role: userDto.role });
 
       const newUser = new this.userModal({
         uid: user.uid,
         email: user.email,
-        role: userClaim.role,
-        username: user.email,
+        role: userDto.role,
+        username: userDto.username,
         photoURL: user.photoURL,
         public: true,
       });
