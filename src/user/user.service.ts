@@ -25,7 +25,9 @@ export class UserService {
         email: user.email,
         role: userDto.role,
         username: userDto.username,
-        photoURL: user.photoURL,
+        photoURL:
+          user.photoURL ||
+          `https://api.dicebear.com/9.x/thumbs/png?seed=${userDto.username}`,
         public: userDto.isPublic,
       });
 
@@ -74,6 +76,20 @@ export class UserService {
       );
 
       return updatedUser;
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
+  }
+
+  async me(authToken: string): Promise<User> {
+    try {
+      const app = this.admin.setup();
+
+      const user = await app.auth().verifyIdToken(authToken);
+
+      const me = await this.userModal.findOne({ uid: user.uid });
+
+      return me;
     } catch (error) {
       throw new BadRequestException(error.message);
     }

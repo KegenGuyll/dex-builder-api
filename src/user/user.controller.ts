@@ -51,4 +51,16 @@ export class UserController {
 
     return this.userService.updateUser(authToken, userDto);
   }
+
+  @Get('me')
+  @Auth('USER')
+  async me(@Req() request: Request) {
+    const authToken: string | undefined = request.headers['authorization'];
+
+    if (!authToken) {
+      throw new UnauthorizedException();
+    }
+
+    return this.userService.me(authToken);
+  }
 }
