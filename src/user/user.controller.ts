@@ -1,4 +1,10 @@
-import { Controller, Post, Req, UnauthorizedException } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Post,
+  Req,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { UserService } from './user.service';
 import { UserDto } from './dto/user.dto';
 
@@ -7,7 +13,7 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Post('/signup')
-  async signup(@Req() request: Request, userClaim: UserDto) {
+  async signup(@Req() request: Request, @Body() userClaim: UserDto) {
     const authToken: string | undefined = request.headers['authorization'];
 
     if (!authToken) {
