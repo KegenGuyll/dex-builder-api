@@ -12,7 +12,7 @@ export class User {
   email: string;
 
   @Prop({ default: true })
-  public: boolean;
+  isPublic: boolean;
 
   @Prop()
   photoURL: string;

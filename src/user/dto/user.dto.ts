@@ -27,7 +27,7 @@ export class CreateUserDto {
     value === 'true' ? true : value === 'false' ? false : value,
   )
   @IsBoolean()
-  public: boolean;
+  isPublic: boolean;
 }
 
 export class UpdateUserDto extends CreateUserDto {

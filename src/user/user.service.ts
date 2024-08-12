@@ -26,7 +26,7 @@ export class UserService {
         role: userDto.role,
         username: userDto.username,
         photoURL: user.photoURL,
-        public: userDto.public,
+        public: userDto.isPublic,
       });
 
       await newUser.save();
