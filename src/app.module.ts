@@ -13,6 +13,7 @@ import { DeckModule } from './deck/deck.module';
 
 import { env } from './common/env';
 import { UserModule } from './user/user.module';
+import { CardModule } from './card/card.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { UserModule } from './user/user.module';
     DeckModule,
     MongooseModule.forRoot(env.MONGO_URI),
     UserModule,
+    CardModule,
   ],
   controllers: [AppController],
   providers: [AppService],
