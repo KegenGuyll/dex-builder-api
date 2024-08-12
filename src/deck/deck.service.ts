@@ -2,10 +2,16 @@ import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateDeckDto } from './dto/create-deck.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Deck } from 'src/schemas/deck.schema';
-import { Model } from 'mongoose';
+import { Model, PipelineStage } from 'mongoose';
 import { FirebaseAdmin } from 'config/firebase.setup';
 import { CardService } from 'src/card/card.service';
-import { Card } from './interface/deck.interface';
+import {
+  BasicCard,
+  DeckWithCards,
+  DeckWithCardsResponse,
+  TotalCount,
+} from './interface/deck.interface';
+import { ObjectId } from 'mongodb';
 
 @Injectable()
 export class DeckService {
@@ -15,7 +21,7 @@ export class DeckService {
     @Inject(CardService) private readonly cardService: CardService,
   ) {}
 
-  async updateTCGCards(cards: Card[]) {
+  async updateTCGCards(cards: BasicCard[]) {
     const promiseMap = cards.map((card) => this.cardService.create(card.id));
 
     await Promise.all(promiseMap);
@@ -36,13 +42,59 @@ export class DeckService {
     return createdDeck.save();
   }
 
-  async findAll(authToken: string): Promise<Deck[]> {
+  async findAll(
+    authToken: string,
+    pageNumber: number,
+    pageSize: number,
+  ): Promise<DeckWithCardsResponse> {
     const app = this.admin.setup();
 
     const user = await app.auth().verifyIdToken(authToken);
 
-    const decks = await this.deckModel.find({ userId: user.uid }).exec();
-    return decks;
+    const pipeline: PipelineStage[] = [
+      {
+        $match: {
+          userId: user.uid,
+        },
+      },
+      {
+        $lookup: {
+          from: 'tcgcards',
+          localField: 'cards.id',
+          foreignField: 'id',
+          as: 'cardDetails',
+        },
+      },
+    ];
+
+    const countPipeline = [...pipeline];
+
+    countPipeline.push({
+      $count: 'totalCount',
+    });
+
+    pipeline.push({
+      $skip: Number(pageNumber) * Number(pageSize),
+    });
+
+    pipeline.push({
+      $limit: Number(pageSize),
+    });
+
+    const decks: DeckWithCards[] = await this.deckModel.aggregate(pipeline);
+    const countResults: TotalCount[] =
+      await this.deckModel.aggregate(countPipeline);
+
+    const totalCount = countResults[0]?.totalCount || 0;
+
+    const totalNumberOfPages = Math.floor(totalCount / Number(pageSize));
+
+    return {
+      currentPage: Number(pageNumber),
+      totalCount,
+      totalNumberOfPages,
+      decks,
+    };
   }
 
   async findOne(id: string, authToken: string) {
@@ -50,13 +102,28 @@ export class DeckService {
 
     const user = await app.auth().verifyIdToken(authToken);
 
-    const deck = await this.deckModel.findOne({ _id: id, userId: user.uid });
+    const deck: DeckWithCards[] = await this.deckModel.aggregate([
+      {
+        $match: {
+          _id: new ObjectId(id),
+          userId: user.uid,
+        },
+      },
+      {
+        $lookup: {
+          from: 'tcgcards',
+          localField: 'cards.id',
+          foreignField: 'id',
+          as: 'cardDetails',
+        },
+      },
+    ]);
 
-    if (!deck) {
+    if (!deck.length) {
       throw new NotFoundException(`Deck ${id} not found`);
     }
 
-    return deck;
+    return deck[0];
   }
 
   async update(id: string, updateDeckDto: CreateDeckDto, authToken: string) {

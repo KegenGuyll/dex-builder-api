@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
-import { Card } from 'src/deck/interface/deck.interface';
+import { BasicCard } from 'src/deck/interface/deck.interface';
 
 export type DeckDocument = HydratedDocument<Deck>;
 
@@ -13,7 +13,7 @@ export class Deck {
   description: string;
 
   @Prop()
-  cards: Card[];
+  cards: BasicCard[];
 
   @Prop({ required: true })
   userId: string;

@@ -6,13 +6,18 @@ import {
   Param,
   Post,
   Put,
+  Query,
   Req,
 } from '@nestjs/common';
 import { DeckService } from './deck.service';
-import { CreateDeckDto } from './dto/create-deck.dto';
+import { CreateDeckDto, DeckQueryDto } from './dto/create-deck.dto';
 import { ValidationPipe } from 'src/common/pipes/validation.pipe';
 import { Auth } from 'src/decorators/auth.decorator';
 import { Deck } from 'src/schemas/deck.schema';
+import {
+  DeckWithCards,
+  DeckWithCardsResponse,
+} from './interface/deck.interface';
 
 @Controller('deck')
 export class DeckController {
@@ -31,15 +36,25 @@ export class DeckController {
 
   @Get()
   @Auth('USER')
-  findAll(@Req() req: Request): Promise<Deck[]> {
+  findAll(
+    @Req() req: Request,
+    @Query() deckQueryDto: DeckQueryDto,
+  ): Promise<DeckWithCardsResponse> {
     const authToken: string = (req.headers as any).authorization;
 
-    return this.deckService.findAll(authToken);
+    return this.deckService.findAll(
+      authToken,
+      deckQueryDto.pageNumber,
+      deckQueryDto.pageSize,
+    );
   }
 
   @Get(':deckId')
   @Auth('USER')
-  findOne(@Param('deckId') deckId: string, @Req() req: Request): Promise<Deck> {
+  findOne(
+    @Param('deckId') deckId: string,
+    @Req() req: Request,
+  ): Promise<DeckWithCards> {
     const authToken: string = (req.headers as any).authorization;
 
     return this.deckService.findOne(deckId, authToken);

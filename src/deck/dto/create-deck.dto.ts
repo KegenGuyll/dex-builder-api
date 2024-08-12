@@ -1,5 +1,6 @@
-import { IsObject, IsString } from 'class-validator';
-import { Card } from '../interface/deck.interface';
+import { IsNotEmpty, IsNumber, IsObject, IsString } from 'class-validator';
+import { BasicCard } from '../interface/deck.interface';
+import { Transform } from 'class-transformer';
 
 export class CreateDeckDto {
   @IsString()
@@ -9,5 +10,17 @@ export class CreateDeckDto {
   readonly description: string;
 
   @IsObject({ each: true })
-  readonly cards: Card[];
+  readonly cards: BasicCard[];
+}
+
+export class DeckQueryDto {
+  @IsNotEmpty()
+  @Transform(({ value }) => Number(value))
+  @IsNumber()
+  readonly pageNumber: number;
+
+  @IsNotEmpty()
+  @Transform(({ value }) => Number(value))
+  @IsNumber()
+  readonly pageSize: number;
 }
