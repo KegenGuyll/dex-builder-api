@@ -43,6 +43,9 @@ export class OwnedService {
           as: 'cardDetails',
         },
       },
+      {
+        $unwind: '$cardDetails',
+      },
     ];
 
     const countPipeline = [...pipeline];
