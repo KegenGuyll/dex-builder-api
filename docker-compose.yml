@@ -1,0 +1,33 @@
+version: '3.7'
+services:
+  dex_builder_api_container:
+    container_name: dex_builder_api_container
+    restart: always
+    build: './'
+    environment:
+      VIRTUAL_HOST: api.tmrev.io
+      LETSENCRYPT_HOST: api.tmrev.io
+    expose:
+      - '8080'
+  nginx-proxy-2:
+    container_name: nginx_container-2
+    restart: always
+    image: jwilder/nginx-proxy
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - '/etc/nginx/vhost.d'
+      - '/usr/share/nginx/html'
+      - '/var/run/docker.sock:/tmp/docker.sock:ro'
+      - '/etc/nginx/certs'
+    depends_on:
+      - dex_builder_api_container
+  letsencrypt-nginx-proxy-companion-2:
+    container_name: letsencrypt-2
+    restart: always
+    image: jrcs/letsencrypt-nginx-proxy-companion
+    volumes:
+      - '/var/run/docker.sock:/var/run/docker.sock:ro'
+    volumes_from:
+      - 'nginx-proxy-2'
