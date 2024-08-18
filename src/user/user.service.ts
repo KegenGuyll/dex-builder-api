@@ -15,6 +15,7 @@ import {
   BasicOwned,
   OwnedNetWorthResponse,
 } from 'src/owned/interface/owned.interface';
+import { generateFromEmail, generateUsername } from 'unique-username-generator';
 
 @Injectable()
 export class UserService {
@@ -42,6 +43,13 @@ export class UserService {
           user.photoURL ||
           `https://api.dicebear.com/9.x/thumbs/png?seed=${userDto.username}`,
         public: userDto.isPublic,
+      });
+
+      app.auth().updateUser(user.uid, {
+        displayName: userDto.username,
+        photoURL:
+          user.photoURL ||
+          `https://api.dicebear.com/9.x/thumbs/png?seed=${userDto.username}`,
       });
 
       await newUser.save();
@@ -90,6 +98,22 @@ export class UserService {
     );
 
     return netWorth;
+  }
+
+  async isUsernameAvailable(username: string): Promise<boolean> {
+    const user = await this.userModal.findOne({ username });
+
+    return user ? false : true;
+  }
+
+  async suggestUsername(email: string): Promise<string> {
+    const username = generateFromEmail(email);
+
+    const isUsernameAvailable = await this.isUsernameAvailable(username);
+
+    if (isUsernameAvailable) return username;
+
+    return this.suggestUsername(generateUsername());
   }
 
   async findAll(): Promise<User[]> {

@@ -44,6 +44,21 @@ export class UserController {
     return this.userService.findUserNetWorth(username);
   }
 
+  @Get('/username/:username/exists')
+  async checkUsernameExists(@Param('username') username: string) {
+    const isUsernameAvailable =
+      await this.userService.isUsernameAvailable(username);
+
+    return { isUsernameAvailable };
+  }
+
+  @Get('/username/:email/suggest')
+  async suggestUsername(@Param('email') email: string) {
+    const username = await this.userService.suggestUsername(email);
+
+    return { username };
+  }
+
   @Put(':userId/role')
   @Auth('ADMIN')
   async updateRole(@Param('userId') userId: string, @Body() role: UserRoleDto) {
