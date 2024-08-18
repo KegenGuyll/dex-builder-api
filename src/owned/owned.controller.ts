@@ -36,7 +36,7 @@ export class OwnedController {
 
   @Get('/net-worth')
   @Auth('USER')
-  netWorth(@Req() req: Request) {
+  findTotalNetWorth(@Req() req: Request) {
     const authToken: string = (req.headers as any).authorization;
 
     return this.ownedService.findTotalNetWorth(authToken);
