@@ -2,7 +2,7 @@ import { TCGCard } from 'src/schemas/card.schema';
 import { OwnedDocument } from 'src/schemas/owned.schema';
 
 export interface OwnedWithCards extends OwnedDocument {
-  cardDetails: TCGCard[];
+  cardDetails: TCGCard;
 }
 
 export interface OwnedWithCardsResponse {

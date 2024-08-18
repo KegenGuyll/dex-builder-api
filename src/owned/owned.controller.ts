@@ -34,6 +34,14 @@ export class OwnedController {
     return this.ownedService.findAll(authToken, ownedQueryDto);
   }
 
+  @Get('/set/:setId')
+  @Auth('USER')
+  findBySetId(@Req() req: Request, @Param('setId') setId: string) {
+    const authToken: string = (req.headers as any).authorization;
+
+    return this.ownedService.findBySetId(authToken, setId);
+  }
+
   @Get(':ownedId')
   @Auth('USER')
   findOne(@Req() req: Request, @Param('ownedId') ownedId: string) {

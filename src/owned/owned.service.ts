@@ -9,7 +9,7 @@ import {
   OwnedWithCards,
   OwnedWithCardsResponse,
 } from './interface/owned.interface';
-import { TotalCount } from 'src/deck/interface/deck.interface';
+import { BasicCard, TotalCount } from 'src/deck/interface/deck.interface';
 import { FindAllOwnedQueryDto } from './dto/findAll-owned.dto';
 
 @Injectable()
@@ -78,6 +78,47 @@ export class OwnedService {
     };
   }
 
+  async findBySetId(authToken: string, setId: string): Promise<BasicCard[]> {
+    const app = this.admin.setup();
+
+    const user = await app.auth().verifyIdToken(authToken);
+
+    const pipeline: PipelineStage[] = [
+      {
+        $match: {
+          userId: user.uid,
+        },
+      },
+      {
+        $lookup: {
+          from: 'tcgcards',
+          localField: 'cardId',
+          foreignField: 'id',
+          as: 'cardDetails',
+        },
+      },
+      {
+        $unwind: '$cardDetails',
+      },
+      {
+        $match: {
+          'cardDetails.set.id': setId,
+        },
+      },
+    ];
+
+    const results = await this.ownedModel.aggregate<OwnedWithCards>(pipeline);
+
+    if (!results) throw new NotFoundException(`Set-${setId} not found`);
+
+    const basicCards: BasicCard[] = results.map((owned: OwnedWithCards) => ({
+      id: owned.cardId,
+      count: owned.count,
+    }));
+
+    return basicCards;
+  }
+
   async findOne(
     authToken: string,
     cardId: string,
@@ -107,7 +148,7 @@ export class OwnedService {
       },
     ];
 
-    const owned: OwnedWithCards[] = await this.ownedModel.aggregate(pipeline);
+    const owned = await this.ownedModel.aggregate<OwnedWithCards>(pipeline);
 
     if (!owned.length && useException) {
       throw new NotFoundException(`Card-${cardId} not owned`);
