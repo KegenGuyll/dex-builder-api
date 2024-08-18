@@ -105,6 +105,8 @@ export class OwnedService {
       {
         $project: {
           cardId: 1,
+          cardName: '$cardDetails.name',
+          images: '$cardDetails.images',
           marketPrice: '$cardDetails.cardmarket.prices',
           count: 1,
         },
@@ -117,6 +119,14 @@ export class OwnedService {
       const marketPrice = curr.marketPrice?.averageSellPrice || 0;
       return acc + marketPrice * curr.count;
     }, 0);
+
+    // sort owned by average sell price
+    owned.sort((a, b) => {
+      const aPrice = a.marketPrice?.averageSellPrice || 0;
+      const bPrice = b.marketPrice?.averageSellPrice || 0;
+
+      return bPrice - aPrice;
+    });
 
     return {
       totalAveragedNetWorth: totalNetWorth,
@@ -157,6 +167,8 @@ export class OwnedService {
       {
         $project: {
           cardId: 1,
+          cardName: '$cardDetails.name',
+          images: '$cardDetails.images',
           marketPrice: '$cardDetails.cardmarket.prices',
           count: 1,
         },
@@ -169,6 +181,14 @@ export class OwnedService {
       const marketPrice = curr.marketPrice?.averageSellPrice || 0;
       return acc + marketPrice * curr.count;
     }, 0);
+
+    // sort owned by average sell price
+    owned.sort((a, b) => {
+      const aPrice = a.marketPrice?.averageSellPrice || 0;
+      const bPrice = b.marketPrice?.averageSellPrice || 0;
+
+      return bPrice - aPrice;
+    });
 
     return {
       totalAveragedNetWorth: totalNetWorth,

@@ -1,4 +1,4 @@
-import { CardMarketPrices, TCGCard } from 'src/schemas/card.schema';
+import { CardMarketPrices, Images, TCGCard } from 'src/schemas/card.schema';
 import { OwnedDocument } from 'src/schemas/owned.schema';
 
 export interface OwnedWithCards extends OwnedDocument {
@@ -14,6 +14,8 @@ export interface OwnedWithCardsResponse {
 
 export interface OwnedNetWorth {
   cardId: string;
+  cardName: string;
+  images: Images;
   marketPrice: CardMarketPrices;
   count: number;
 }
