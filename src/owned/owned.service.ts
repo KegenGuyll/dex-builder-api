@@ -6,6 +6,7 @@ import { CardService } from 'src/card/card.service';
 import { CreateOwnedDto } from 'src/owned/dto/create-owned.dto';
 import { Owned, OwnedDocument } from 'src/schemas/owned.schema';
 import {
+  BasicOwned,
   OwnedNetWorth,
   OwnedNetWorthResponse,
   OwnedWithCards,
@@ -77,6 +78,91 @@ export class OwnedService {
       currentPage: Number(pageNumber),
       totalCount,
       totalNumberOfPages,
+    };
+  }
+
+  async findAllByUserId(userId: string): Promise<BasicOwned[]> {
+    const pipeline: PipelineStage[] = [
+      {
+        $match: {
+          userId,
+        },
+      },
+      {
+        $lookup: {
+          from: 'tcgcards',
+          localField: 'cardId',
+          foreignField: 'id',
+          as: 'cardDetails',
+        },
+      },
+      {
+        $unwind: '$cardDetails',
+      },
+      {
+        $project: {
+          cardId: 1,
+          cardSupertype: '$cardDetails.supertype',
+          cardRarity: '$cardDetails.rarity',
+          cardName: '$cardDetails.name',
+          images: '$cardDetails.images',
+          count: 1,
+        },
+      },
+    ];
+
+    return this.ownedModel.aggregate<BasicOwned>(pipeline);
+  }
+
+  async findTotalNetWorthByUserId(
+    userId: string,
+  ): Promise<OwnedNetWorthResponse> {
+    const pipeline: PipelineStage[] = [
+      {
+        $match: {
+          userId,
+        },
+      },
+      {
+        $lookup: {
+          from: 'tcgcards',
+          localField: 'cardId',
+          foreignField: 'id',
+          as: 'cardDetails',
+        },
+      },
+      {
+        $unwind: '$cardDetails',
+      },
+      {
+        $project: {
+          cardId: 1,
+          cardName: '$cardDetails.name',
+          images: '$cardDetails.images',
+          marketPrice: '$cardDetails.cardmarket.prices',
+          count: 1,
+        },
+      },
+    ];
+
+    const owned = await this.ownedModel.aggregate<OwnedNetWorth>(pipeline);
+
+    const totalNetWorth = owned.reduce((acc, curr) => {
+      const marketPrice = curr.marketPrice?.averageSellPrice || 0;
+      return acc + marketPrice * curr.count;
+    }, 0);
+
+    // sort owned by average sell price
+    owned.sort((a, b) => {
+      const aPrice = a.marketPrice?.averageSellPrice || 0;
+      const bPrice = b.marketPrice?.averageSellPrice || 0;
+
+      return bPrice - aPrice;
+    });
+
+    return {
+      totalAveragedNetWorth: totalNetWorth,
+      cards: owned,
     };
   }
 

@@ -1,15 +1,28 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { FirebaseAdmin } from 'config/firebase.setup';
 import { CreateUserDto, UpdateUserDto, UserRoleDto } from './dto/user.dto';
 import { InjectModel } from '@nestjs/mongoose';
-import { User } from 'src/schemas/user.schema';
+import { User, UserDocument } from 'src/schemas/user.schema';
 import { Model } from 'mongoose';
+import { DeckService } from 'src/deck/deck.service';
+import { OwnedService } from 'src/owned/owned.service';
+import {
+  BasicOwned,
+  OwnedNetWorthResponse,
+} from 'src/owned/interface/owned.interface';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectModel(User.name) private userModal: Model<User>,
     private readonly admin: FirebaseAdmin,
+    @Inject(OwnedService) private readonly ownedService: OwnedService,
+    @Inject(DeckService) private readonly deckService: DeckService,
   ) {}
 
   async createUser(authToken: string, userDto: CreateUserDto): Promise<User> {
@@ -39,6 +52,44 @@ export class UserService {
     } catch (error) {
       throw new BadRequestException(error.message);
     }
+  }
+
+  async findUserCollection(username: string): Promise<BasicOwned[]> {
+    const userCollection = await this.userModal.findOne<UserDocument>({
+      username,
+    });
+
+    if (!userCollection) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (!userCollection.isPublic)
+      throw new BadRequestException('User collection is private');
+
+    const ownedCollection = await this.ownedService.findAllByUserId(
+      userCollection.uid,
+    );
+
+    return ownedCollection;
+  }
+
+  async findUserNetWorth(username: string): Promise<OwnedNetWorthResponse> {
+    const userCollection = await this.userModal.findOne<UserDocument>({
+      username,
+    });
+
+    if (!userCollection) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (!userCollection.isPublic)
+      throw new BadRequestException('User collection is private');
+
+    const netWorth = await this.ownedService.findTotalNetWorthByUserId(
+      userCollection.uid,
+    );
+
+    return netWorth;
   }
 
   async findAll(): Promise<User[]> {

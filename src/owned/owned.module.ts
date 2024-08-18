@@ -13,5 +13,6 @@ import { CardModule } from 'src/card/card.module';
   ],
   controllers: [OwnedController],
   providers: [OwnedService, FirebaseAdmin],
+  exports: [OwnedService],
 })
 export class OwnedModule {}

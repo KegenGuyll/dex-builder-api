@@ -34,6 +34,16 @@ export class UserController {
     return this.userService.findAll();
   }
 
+  @Get(':username/collection')
+  async findUserCollection(@Param('username') username: string) {
+    return this.userService.findUserCollection(username);
+  }
+
+  @Get(':username/net-worth')
+  async findUserNetWorth(@Param('username') username: string) {
+    return this.userService.findUserNetWorth(username);
+  }
+
   @Put(':userId/role')
   @Auth('ADMIN')
   async updateRole(@Param('userId') userId: string, @Body() role: UserRoleDto) {

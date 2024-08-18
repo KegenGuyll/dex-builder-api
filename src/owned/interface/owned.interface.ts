@@ -20,6 +20,15 @@ export interface OwnedNetWorth {
   count: number;
 }
 
+export interface BasicOwned {
+  cardId: string;
+  count: number;
+  cardSupertype: string;
+  cardRarity: string;
+  cardName: string;
+  images: Images;
+}
+
 export interface OwnedNetWorthResponse {
   totalAveragedNetWorth: number;
   cards: OwnedNetWorth[];

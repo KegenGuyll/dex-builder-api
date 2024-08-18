@@ -13,5 +13,6 @@ import { CardModule } from 'src/card/card.module';
   ],
   controllers: [DeckController],
   providers: [DeckService, FirebaseAdmin],
+  exports: [DeckService],
 })
 export class DeckModule {}
