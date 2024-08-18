@@ -6,6 +6,8 @@ import { CardService } from 'src/card/card.service';
 import { CreateOwnedDto } from 'src/owned/dto/create-owned.dto';
 import { Owned, OwnedDocument } from 'src/schemas/owned.schema';
 import {
+  OwnedNetWorth,
+  OwnedNetWorthResponse,
   OwnedWithCards,
   OwnedWithCardsResponse,
 } from './interface/owned.interface';
@@ -75,6 +77,50 @@ export class OwnedService {
       currentPage: Number(pageNumber),
       totalCount,
       totalNumberOfPages,
+    };
+  }
+
+  async findTotalNetWorth(authToken: string): Promise<OwnedNetWorthResponse> {
+    const app = this.admin.setup();
+
+    const user = await app.auth().verifyIdToken(authToken);
+
+    const pipeline: PipelineStage[] = [
+      {
+        $match: {
+          userId: user.uid,
+        },
+      },
+      {
+        $lookup: {
+          from: 'tcgcards',
+          localField: 'cardId',
+          foreignField: 'id',
+          as: 'cardDetails',
+        },
+      },
+      {
+        $unwind: '$cardDetails',
+      },
+      {
+        $project: {
+          cardId: 1,
+          marketPrice: '$cardDetails.cardmarket.prices',
+          count: 1,
+        },
+      },
+    ];
+
+    const owned = await this.ownedModel.aggregate<OwnedNetWorth>(pipeline);
+
+    const totalNetWorth = owned.reduce((acc, curr) => {
+      const marketPrice = curr.marketPrice?.averageSellPrice || 0;
+      return acc + marketPrice * curr.count;
+    }, 0);
+
+    return {
+      totalAveragedNetWorth: totalNetWorth,
+      cards: owned,
     };
   }
 

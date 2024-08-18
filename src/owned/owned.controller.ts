@@ -34,6 +34,14 @@ export class OwnedController {
     return this.ownedService.findAll(authToken, ownedQueryDto);
   }
 
+  @Get('/net-worth')
+  @Auth('USER')
+  netWorth(@Req() req: Request) {
+    const authToken: string = (req.headers as any).authorization;
+
+    return this.ownedService.findTotalNetWorth(authToken);
+  }
+
   @Get('/set/:setId')
   @Auth('USER')
   findBySetId(@Req() req: Request, @Param('setId') setId: string) {

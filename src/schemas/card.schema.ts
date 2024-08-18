@@ -239,3 +239,18 @@ export class TCGCard {
 }
 
 export const TCGCardSchema = SchemaFactory.createForClass(TCGCard);
+
+export type {
+  AncientTrait,
+  Abilities,
+  Attacks,
+  Weaknesses,
+  Resistances,
+  Legalities,
+  Set,
+  Images,
+  TCGPrices,
+  TCGPlayer,
+  CardMarketPrices,
+  CardMarket,
+};
