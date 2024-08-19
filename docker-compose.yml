@@ -5,8 +5,8 @@ services:
     restart: always
     build: './'
     environment:
-      VIRTUAL_HOST: api.tmrev.io
-      LETSENCRYPT_HOST: api.tmrev.io
+      VIRTUAL_HOST: dexbuilder.tmrev.io
+      LETSENCRYPT_HOST: dexbuilder.tmrev.io
     expose:
       - '8080'
   nginx-proxy-2:
