@@ -105,6 +105,7 @@ export class OwnedService {
           cardSupertype: '$cardDetails.supertype',
           cardRarity: '$cardDetails.rarity',
           cardName: '$cardDetails.name',
+          cardType: '$cardDetails.types',
           images: '$cardDetails.images',
           count: 1,
         },

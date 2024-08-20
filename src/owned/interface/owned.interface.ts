@@ -25,6 +25,7 @@ export interface BasicOwned {
   count: number;
   cardSupertype: string;
   cardRarity: string;
+  cardType: string[];
   cardName: string;
   images: Images;
 }
